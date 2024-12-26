@@ -1,104 +1,360 @@
 local player = game.Players.LocalPlayer
 
--- Interface GUI
 local gui = Instance.new("ScreenGui")
 gui.Parent = player:WaitForChild("PlayerGui")
 
-local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 300, 0, 400)
-frame.Position = UDim2.new(0.5, -150, 0.5, -200)  -- Meio da tela
-frame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-frame.BorderSizePixel = 0
-frame.Active = true
-frame.Draggable = true  -- Permitir arrastar a interface inteira
-frame.Parent = gui
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 600, 0, 400)
+mainFrame.Position = UDim2.new(0.5, -300, 0.5, -200)  -- Centralizar na tela
+mainFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+mainFrame.BorderSizePixel = 0
+mainFrame.Active = true
+mainFrame.Draggable = true
+mainFrame.Parent = gui
 
--- Título
 local titleBar = Instance.new("Frame")
 titleBar.Size = UDim2.new(1, 0, 0, 50)
 titleBar.Position = UDim2.new(0, 0, 0, 0)
 titleBar.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 titleBar.BorderSizePixel = 0
-titleBar.Parent = frame
+titleBar.Parent = mainFrame
 
 local titleLabel = Instance.new("TextLabel")
 titleLabel.Size = UDim2.new(1, 0, 1, 0)
 titleLabel.Position = UDim2.new(0, 0, 0, 0)
 titleLabel.BackgroundTransparency = 1
-titleLabel.Text = "Lista de Imagens"
+titleLabel.Text = "Dados do Jogo"
 titleLabel.TextColor3 = Color3.new(1, 1, 1)
 titleLabel.Font = Enum.Font.SourceSansBold
 titleLabel.TextSize = 24
 titleLabel.Parent = titleBar
 
-local scrollingFrame = Instance.new("ScrollingFrame")
-scrollingFrame.Size = UDim2.new(1, 0, 1, -50)  -- Ajuste para não cobrir o título
-scrollingFrame.Position = UDim2.new(0, 0, 0, 50)
-scrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
-scrollingFrame.ScrollBarThickness = 10
-scrollingFrame.ScrollingDirection = Enum.ScrollingDirection.Y
-scrollingFrame.BackgroundTransparency = 1
-scrollingFrame.Parent = frame
+local tabContainer = Instance.new("Frame")
+tabContainer.Size = UDim2.new(1, 0, 1, -50)
+tabContainer.Position = UDim2.new(0, 0, 0, 50)
+tabContainer.BackgroundTransparency = 1
+tabContainer.Parent = mainFrame
 
-local UIListLayout = Instance.new("UIListLayout")
-UIListLayout.Parent = scrollingFrame
-UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+local tabLayout = Instance.new("UIPageLayout")
+tabLayout.Parent = tabContainer
+tabLayout.SortOrder = Enum.SortOrder.LayoutOrder
+tabLayout.FillDirection = Enum.FillDirection.Vertical
 
--- Função para obter todas as imagens
-local function getAllImages()
+local soundsTab = Instance.new("Frame")
+soundsTab.Size = UDim2.new(1, 0, 1, 0)
+soundsTab.BackgroundTransparency = 1
+soundsTab.Name = "Sons"
+soundsTab.Parent = tabContainer
+
+local soundsLabel = Instance.new("TextLabel")
+soundsLabel.Size = UDim2.new(1, 0, 0.1, 0)
+soundsLabel.BackgroundTransparency = 1
+soundsLabel.Text = "Sons"
+soundsLabel.TextColor3 = Color3.new(1, 1, 1)
+soundsLabel.Font = Enum.Font.SourceSansBold
+soundsLabel.TextSize = 20
+soundsLabel.Parent = soundsTab
+
+local soundsScrollingFrame = Instance.new("ScrollingFrame")
+soundsScrollingFrame.Size = UDim2.new(1, 0, 0.9, -20)
+soundsScrollingFrame.Position = UDim2.new(0, 0, 0.1, 10)
+soundsScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 0)  -- CanvasSize inicial
+soundsScrollingFrame.ScrollBarThickness = 10
+soundsScrollingFrame.BackgroundTransparency = 0.5
+soundsScrollingFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+soundsScrollingFrame.Parent = soundsTab
+
+local soundsLayout = Instance.new("UIListLayout")
+soundsLayout.Parent = soundsScrollingFrame
+soundsLayout.SortOrder = Enum.SortOrder.LayoutOrder
+soundsLayout.Padding = UDim.new(0, 10)
+
+local function updateSoundsCanvasSize()
+    local contentSize = soundsLayout.AbsoluteContentSize
+    soundsScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, contentSize.Y)
+end
+
+local function getAllSounds()
+    local sounds = {}
+    for _, obj in pairs(game:GetDescendants()) do
+        if obj:IsA("Sound") then
+            table.insert(sounds, {Name = obj.Name, Id = obj.SoundId})
+        end
+    end
+    return sounds
+end
+
+local sounds = getAllSounds()
+
+local function createSoundButton(sound)
+    local buttonFrame = Instance.new("Frame")
+    buttonFrame.Size = UDim2.new(1, -20, 0, 40)
+    buttonFrame.BackgroundTransparency = 0.5
+    buttonFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+    buttonFrame.BorderSizePixel = 0
+    buttonFrame.Parent = soundsScrollingFrame
+
+    local textLabel = Instance.new("TextLabel")
+    textLabel.Size = UDim2.new(0.6, 0, 1, 0)
+    textLabel.Position = UDim2.new(0, 0, 0, 0)
+    textLabel.BackgroundTransparency = 1
+    textLabel.Text = sound.Name
+    textLabel.TextColor3 = Color3.new(1, 1, 1)
+    textLabel.Font = Enum.Font.SourceSansBold
+    textLabel.TextSize = 14
+    textLabel.Parent = buttonFrame
+
+    local playButton = Instance.new("TextButton")
+    playButton.Size = UDim2.new(0.2, 0, 1, 0)
+    playButton.Position = UDim2.new(0.6, 0, 0, 0)
+    playButton.Text = "Reproduzir"
+    playButton.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
+    playButton.TextColor3 = Color3.new(1, 1, 1)
+    playButton.Font = Enum.Font.SourceSans
+    playButton.TextSize = 14
+    playButton.Parent = buttonFrame
+
+    local copyButton = Instance.new("TextButton")
+    copyButton.Size = UDim2.new(0.2, 0, 1, 0)
+    copyButton.Position = UDim2.new(0.8, 0, 0, 0)
+    copyButton.Text = "Copiar"
+    copyButton.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
+    copyButton.TextColor3 = Color3.new(1, 1, 1)
+    copyButton.Font = Enum.Font.SourceSans
+    copyButton.TextSize = 14
+    copyButton.Parent = buttonFrame
+
+    local soundInstance = Instance.new("Sound")
+    soundInstance.SoundId = sound.Id
+    soundInstance.Parent = buttonFrame
+
+    playButton.MouseButton1Click:Connect(function()
+        soundInstance:Play()
+    end)
+
+    copyButton.MouseButton1Click:Connect(function()
+        setclipboard(sound.Id)  -- Função para copiar o ID do som
+    end)
+
+    updateSoundsCanvasSize()
+end
+
+for _, sound in ipairs(sounds) do
+    createSoundButton(sound)
+end
+
+local imagesTab = Instance.new("Frame")
+imagesTab.Size = UDim2.new(1, 0, 1, 0)
+imagesTab.BackgroundTransparency = 1
+imagesTab.Name = "Imagens ID"
+imagesTab.Parent = tabContainer
+
+local imagesLabel = Instance.new("TextLabel")
+imagesLabel.Size = UDim2.new(1, 0, 0.1, 0)
+imagesLabel.BackgroundTransparency = 1
+imagesLabel.Text = "Imagens ID"
+imagesLabel.TextColor3 = Color3.new(1, 1, 1)
+imagesLabel.Font = Enum.Font.SourceSansBold
+imagesLabel.TextSize = 20
+imagesLabel.Parent = imagesTab
+
+local imagesScrollingFrame = Instance.new("ScrollingFrame")
+imagesScrollingFrame.Size = UDim2.new(1, 0, 0.9, -20)
+imagesScrollingFrame.Position = UDim2.new(0, 0, 0.1, 10)
+imagesScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 0)  -- CanvasSize inicial
+imagesScrollingFrame.ScrollBarThickness = 10
+imagesScrollingFrame.BackgroundTransparency = 0.5
+imagesScrollingFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+imagesScrollingFrame.Parent = imagesTab
+
+local imagesLayout = Instance.new("UIGridLayout")
+imagesLayout.Parent = imagesScrollingFrame
+imagesLayout.SortOrder = Enum.SortOrder.LayoutOrder
+imagesLayout.CellSize = UDim2.new(0, 120, 0, 120)
+imagesLayout.CellPadding = UDim2.new(0, 10, 0, 10)
+
+local function updateImagesCanvasSize()
+    local contentSize = imagesLayout.AbsoluteContentSize
+    imagesScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, contentSize.Y)
+end
+
+local function getAllUniqueImages()
+    local uniqueImages = {}
     local images = {}
-    for _, image in pairs(game:GetDescendants()) do
-        if image:IsA("ImageLabel") or image:IsA("ImageButton") then
-            table.insert(images, {Name = image.Name, Id = image.Image})
+    for _, obj in pairs(game:GetDescendants()) do
+        local imageId = obj:IsA("ImageLabel") and obj.Image or obj:IsA("Decal") and obj.Texture or obj:IsA("ImageButton") and obj.Image
+        if imageId and not uniqueImages[imageId] then
+            uniqueImages[imageId] = true
+            table.insert(images, {Name = obj.Name, Id = imageId, Image = imageId})
         end
     end
     return images
 end
 
-local images = getAllImages()
+local images = getAllUniqueImages()
 
 local function createImageButton(image)
     local buttonFrame = Instance.new("Frame")
-    buttonFrame.Size = UDim2.new(1, 0, 0, 100)  -- Aumentei o tamanho para futurista
+    buttonFrame.Size = UDim2.new(0, 120, 0, 120)  -- Ajuste de tamanho
     buttonFrame.BackgroundTransparency = 0.5
     buttonFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
     buttonFrame.BorderSizePixel = 0
-    buttonFrame.Parent = scrollingFrame
+    buttonFrame.Parent = imagesScrollingFrame
 
     local textLabel = Instance.new("TextLabel")
-    textLabel.Size = UDim2.new(0.6, -10, 1, 0)
-    textLabel.Position = UDim2.new(0, 10, 0, 0)
+    textLabel.Size = UDim2.new(1, 0, 0.3, 0)
+    textLabel.Position = UDim2.new(0, 0, 0, 0)
     textLabel.BackgroundTransparency = 1
     textLabel.Text = image.Name
     textLabel.TextColor3 = Color3.new(1, 1, 1)
     textLabel.Font = Enum.Font.SourceSansBold
-    textLabel.TextSize = 18
+    textLabel.TextSize = 14
     textLabel.Parent = buttonFrame
 
     local imageLabel = Instance.new("ImageLabel")
-    imageLabel.Size = UDim2.new(0.3, 0, 0.8, 0)
-    imageLabel.Position = UDim2.new(0.65, 0, 0.1, 0)
+    imageLabel.Size = UDim2.new(0.8, 0, 0.5, 0)
+    imageLabel.Position = UDim2.new(0.1, 0, 0.35, 0)
     imageLabel.BackgroundTransparency = 1
-    imageLabel.Image = image.Id
+    imageLabel.Image = image.Image
     imageLabel.Parent = buttonFrame
 
     local copyButton = Instance.new("TextButton")
-    copyButton.Size = UDim2.new(0.2, -10, 0.5, -10)
-    copyButton.Position = UDim2.new(0.8, 0, 0.25, 0)
+    copyButton.Size = UDim2.new(0.8, 0, 0.2, 0)
+    copyButton.Position = UDim2.new(0.1, 0, 0.8, 0)
     copyButton.Text = "Copiar"
     copyButton.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
     copyButton.TextColor3 = Color3.new(1, 1, 1)
     copyButton.Font = Enum.Font.SourceSans
-    copyButton.TextSize = 18
+    copyButton.TextSize = 14
     copyButton.Parent = buttonFrame
 
     copyButton.MouseButton1Click:Connect(function()
         setclipboard(image.Id)  -- Função para copiar o ID da imagem
     end)
 
-    scrollingFrame.CanvasSize = UDim2.new(0, 0, 0, scrollingFrame.CanvasSize.Y.Offset + 100)  -- Atualiza o tamanho da tela
+    updateImagesCanvasSize()
 end
 
 for _, image in ipairs(images) do
     createImageButton(image)
+end
+
+local detailsTab = Instance.new("Frame")
+detailsTab.Size = UDim2.new(1, 0, 1, 0)
+detailsTab.BackgroundTransparency = 1
+detailsTab.Name = "Detalhes"
+detailsTab.Parent = tabContainer
+
+local detailsLabel = Instance.new("TextLabel")
+detailsLabel.Size = UDim2.new(1, 0, 0.1, 0)
+detailsLabel.BackgroundTransparency = 1
+detailsLabel.Text = "Detalhes"
+detailsLabel.TextColor3 = Color3.new(1, 1, 1)
+detailsLabel.Font = Enum.Font.SourceSansBold
+detailsLabel.TextSize = 20
+detailsLabel.Parent = detailsTab
+
+local detailsScrollingFrame = Instance.new("ScrollingFrame")
+detailsScrollingFrame.Size = UDim2.new(1, 0, 0.9, -20)
+detailsScrollingFrame.Position = UDim2.new(0, 0, 0.1, 10)
+detailsScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 0)  -- CanvasSize inicial
+detailsScrollingFrame.ScrollBarThickness = 10
+detailsScrollingFrame.BackgroundTransparency = 0.5
+detailsScrollingFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+detailsScrollingFrame.Parent = detailsTab
+
+local detailsLayout = Instance.new("UIGridLayout")
+detailsLayout.Parent = detailsScrollingFrame
+detailsLayout.SortOrder = Enum.SortOrder.LayoutOrder
+detailsLayout.CellSize = UDim2.new(0, 120, 0, 120)
+detailsLayout.CellPadding = UDim2.new(0, 10, 0, 10)
+
+local function updateDetailsCanvasSize()
+    local contentSize = detailsLayout.AbsoluteContentSize
+    detailsScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, contentSize.Y)
+end
+
+local function getAllUniqueDetails()
+    local uniqueDetails = {}
+    local details = {}
+    for _, obj in pairs(game:GetDescendants()) do
+        if obj:IsA("ParticleEmitter") or obj:IsA("Smoke") or obj:IsA("Fire") or obj:IsA("Sparkles") or obj:IsA("Beam") then
+            local detailId = obj.Texture or obj.TextureId
+            if detailId and not uniqueDetails[detailId] then
+                uniqueDetails[detailId] = true
+                table.insert(details, {Name = obj.Name, Id = detailId, Image = detailId})
+            end
+        end
+    end
+    return details
+end
+
+local details = getAllUniqueDetails()
+
+local function createDetailButton(detail)
+    local buttonFrame = Instance.new("Frame")
+    buttonFrame.Size = UDim2.new(0, 120, 0, 120)  -- Ajuste de tamanho
+    buttonFrame.BackgroundTransparency = 0.5
+    buttonFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+    buttonFrame.BorderSizePixel = 0
+    buttonFrame.Parent = detailsScrollingFrame
+
+    local textLabel = Instance.new("TextLabel")
+    textLabel.Size = UDim2.new(1, 0, 0.3, 0)
+    textLabel.Position = UDim2.new(0, 0, 0, 0)
+    textLabel.BackgroundTransparency = 1
+    textLabel.Text = detail.Name
+    textLabel.TextColor3 = Color3.new(1, 1, 1)
+    textLabel.Font = Enum.Font.SourceSansBold
+    textLabel.TextSize = 14
+    textLabel.Parent = buttonFrame
+
+    local imageLabel = Instance.new("ImageLabel")
+    imageLabel.Size = UDim2.new(0.8, 0, 0.5, 0)
+    imageLabel.Position = UDim2.new(0.1, 0, 0.35, 0)
+    imageLabel.BackgroundTransparency = 1
+    imageLabel.Image = detail.Image
+    imageLabel.Parent = buttonFrame
+
+    local copyButton = Instance.new("TextButton")
+    copyButton.Size = UDim2.new(0.8, 0, 0.2, 0)
+    copyButton.Position = UDim2.new(0.1, 0, 0.8, 0)
+    copyButton.Text = "Copiar"
+    copyButton.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
+    copyButton.TextColor3 = Color3.new(1, 1, 1)
+    copyButton.Font = Enum.Font.SourceSans
+    copyButton.TextSize = 14
+    copyButton.Parent = buttonFrame
+
+    copyButton.MouseButton1Click:Connect(function()
+        setclipboard(detail.Id)  -- Função para copiar o ID do detalhe
+    end)
+
+    updateDetailsCanvasSize()
+end
+
+for _, detail in ipairs(details) do
+    createDetailButton(detail)
+end
+
+local tabs = {"Sons", "Imagens ID", "Detalhes"}
+
+local function createTabButton(tabName, pageIndex)
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(0, 100, 0, 40)
+    button.Position = UDim2.new(0, (pageIndex - 1) * 110, 0, 10)
+    button.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+    button.TextColor3 = Color3.new(1, 1, 1)
+    button.Font = Enum.Font.SourceSansBold
+    button.TextSize = 18
+    button.Text = tabName
+    button.Parent = mainFrame
+
+    button.MouseButton1Click:Connect(function()
+        tabLayout:JumpTo(tabContainer:FindFirstChild(tabName))
+    end)
+end
+
+for i, tabName in ipairs(tabs) do
+    createTabButton(tabName, i)
 end
